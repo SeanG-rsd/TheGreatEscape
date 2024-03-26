@@ -40,6 +40,8 @@ public class MrFrog : MonoBehaviour
     [SerializeField] private AudioClip deathSound;
     [SerializeField] private AudioClip pillSound;
 
+    [SerializeField] private Animator animator;
+
     public static Action OnPlayerDeath = delegate { };
 
     // Start is called before the first frame update
@@ -78,6 +80,7 @@ public class MrFrog : MonoBehaviour
                 target.GetComponent<Policeman>().ChangeHealth(-currentDamage);
                 currentCooldown = attackCooldown;
                 mrFrogSource.PlayOneShot(attackSound);
+                animator.SetTrigger("Attack");
             }
 
             if (currentRageTime > 0)
@@ -109,9 +112,17 @@ public class MrFrog : MonoBehaviour
     {
         if (canMove)
         {
-            Vector3 movement = new(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"), 0);
+            float horizontal = Input.GetAxis("Horizontal");
+            float vertical = Input.GetAxis("Vertical");
+
+            animator.SetFloat("Horizontal", horizontal);
+            animator.SetFloat("Vertical", vertical);
+
+            Vector3 movement = new(horizontal, vertical, 0);
+            animator.SetFloat("Speed", movement.magnitude);
             movement.Normalize();
             movement *= currentMovementSpeed;
+
 
             transform.position += movement;
         }

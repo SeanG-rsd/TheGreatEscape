@@ -30,6 +30,9 @@ public class Policeman : MonoBehaviour
     [Range(0f, 1f)]
     [SerializeField] private float chanceOfDroppingPill;
 
+    [SerializeField] private Animator carAnimator;
+    [SerializeField] private Animator policemanAnimator;
+
     public static Action<GameObject> OnEnemyDeath = delegate { };
     void Start()
     {
@@ -46,17 +49,29 @@ public class Policeman : MonoBehaviour
         if (canMove)
         { 
             agent.SetDestination(target.transform.position);
-        }
+            Vector2 angle = FindAngle();
 
-        if (targetInRange)
-        {
-            currentTimeBeforeShoot -= Time.deltaTime;
-            if (currentTimeBeforeShoot < 0)
+            if (isCar)
             {
-                Shoot();
-                currentTimeBeforeShoot = timeBeforeCanShoot;
+                carAnimator.SetFloat("Horizontal", angle.x);
+                carAnimator.SetFloat("Vertical", angle.y);
+            }
+            else
+            {
+                policemanAnimator.SetFloat("Horizontal", angle.x);
+                policemanAnimator.SetFloat("Vertical", angle.y);
             }
         }
+    }
+
+    private Vector2 FindAngle()
+    {
+        float changeX = target.transform.position.x - transform.position.x;
+        float changeY = target.transform.position.y - transform.position.y;
+        Vector2 angle = new (changeX, changeY);
+        angle.Normalize();
+        
+        return angle;
     }
 
     private void Update()
@@ -71,6 +86,16 @@ public class Policeman : MonoBehaviour
 
             canMove = false;
             OnEnemyDeath?.Invoke(gameObject);
+        }
+
+        if (targetInRange)
+        {
+            currentTimeBeforeShoot -= Time.deltaTime;
+            if (currentTimeBeforeShoot < 0)
+            {
+                Shoot();
+                currentTimeBeforeShoot = timeBeforeCanShoot;
+            }
         }
     }
 
@@ -112,7 +137,6 @@ public class Policeman : MonoBehaviour
         if (collision.gameObject.CompareTag("Frog"))
         {
             currentTimeBeforeShoot = timeBeforeCanShoot;
-            if (isCar) { currentTimeBeforeShoot = 0; }
             targetInRange = true;
         }
     }
